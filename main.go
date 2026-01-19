@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"time"
@@ -17,15 +18,22 @@ func main () {
 
 	app.Logger.Println("Our app is live.")
 
+	var port int 
+
+	flag.IntVar(&port, "port", 8080, "Use to change server port.")
+	flag.Parse()
+
+	// curl localhost:8080/health
+	http.HandleFunc("/health", HealthCheck)
+
 	s := &http.Server{
-		Addr: ":8080",
+		Addr: fmt.Sprintf(":%d",port),
 		IdleTimeout: time.Minute,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 	}
 
-	// curl localhost:8080/health
-	http.HandleFunc("/health", HealthCheck)
+	app.Logger.Printf("Server is running on port %d\n", port)
 
 	err = s.ListenAndServe()
 

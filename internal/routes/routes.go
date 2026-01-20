@@ -10,5 +10,12 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 	r := chi.NewRouter()
 	// curl localhost:8080/health
 	r.Get("/health", app.HealthCheck)
+
+	// curl localhost:8080/posts/1
+	r.Get("/posts/{id}", app.PostHandler.HandleGetPostById)
+
+	// curl -X POST localhost:8080/posts
+	r.Post("/posts", app.PostHandler.HandleCreatePost)
+
 	return r
 }

@@ -1,0 +1,35 @@
+### Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.coverprofile
+*.trace
+*.log
+
+### Go workspaces
+go.work
+go.work.sum
+
+### Build artifacts
+/bin/
+/dist/
+/build/
+
+### Editor/IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+### OS files
+.DS_Store
+Thumbs.db
+
+### Local dev data
+database/postgres-data/

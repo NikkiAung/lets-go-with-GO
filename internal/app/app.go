@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"github.com/NikkiAung/go-fundmentals/internal/api"
+	"github.com/NikkiAung/go-fundmentals/internal/store"
+	"github.com/NikkiAung/go-fundmentals/migrations"
 )
 
 type Application struct {
@@ -17,6 +19,15 @@ type Application struct {
 func NewApplication() (*Application, error) {
 	logger := log.New(os.Stdout, "", log.Ldate | log.Ltime)
 	postHandler := api.NewPostHandler()
+	postgresDB, err := store.Open()
+	if err != nil {
+		return nil, err
+	}
+
+	err = store.MigrateFS(postgresDB, migrations.FS, ".")
+	if err != nil {
+		panic(err)
+	}
 
 	app := &Application{
 		Logger: logger,

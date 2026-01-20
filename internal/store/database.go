@@ -3,10 +3,14 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"io/fs"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/pressly/goose/v3"
 )
 
 func Open() (*sql.DB, error) {
-	connectionString := "host=localhost user=user password=pass dbname=postgres port=5432 sslmode=disable"
+	connectionString := "host=localhost user=user password=pass dbname=postgres port=5433 sslmode=disable"
 
 	db, err := sql.Open("pgx", connectionString)
 	if err != nil {
@@ -16,4 +20,30 @@ func Open() (*sql.DB, error) {
 	fmt.Println("Database connected!")
 
 	return db, nil
+}
+
+// binary base
+func MigrateFS(db *sql.DB, migrationFS fs.FS, dir string) error {
+	goose.SetBaseFS(migrationFS)
+
+	defer func() {
+		goose.SetBaseFS(nil)
+	} ()
+
+	return Migrate(db, dir)
+}
+
+// psql -h localhost -p 5433 -U user -d postgres
+func Migrate(db *sql.DB, dir string) error {
+	err := goose.SetDialect("postgres")
+	if err != nil {
+		return fmt.Errorf("db-migrate: error %w", err)
+	}
+
+	err = goose.Up(db, dir)
+	if err != nil {
+		return fmt.Errorf("goose-up: error %w", err)
+	}
+
+	return nil
 }

@@ -16,7 +16,7 @@ type Post struct {
 
 type PostStore interface {
 	CreatePost(*Post) (*Post, error)
-	GetPostById(id int) (*Post, error)
+	GetPostById(id int64) (*Post, error)
 }
 
 type PostgresPostStore struct {
@@ -48,5 +48,10 @@ func (pg *PostgresPostStore) CreatePost(post *Post) (*Post, error) {
 		return nil, err
 	}
 
+	return post, nil
+}
+
+func (pg *PostgresPostStore) GetPostById (id int64) (*Post, error) {
+	post := &Post{}
 	return post, nil
 }

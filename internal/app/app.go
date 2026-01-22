@@ -18,7 +18,7 @@ type Application struct {
 
 func NewApplication() (*Application, error) {
 	logger := log.New(os.Stdout, "", log.Ldate | log.Ltime)
-	postHandler := api.NewPostHandler()
+
 	postgresDB, err := store.Open()
 	if err != nil {
 		return nil, err
@@ -28,6 +28,9 @@ func NewApplication() (*Application, error) {
 	if err != nil {
 		panic(err)
 	}
+
+	postStore := store.NewPostgresPostStore(postgresDB)
+	postHandler := api.NewPostHandler(postStore)
 
 	app := &Application{
 		Logger: logger,

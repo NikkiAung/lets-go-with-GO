@@ -87,3 +87,69 @@ func (ph *PostHandler)HandleGetPostById(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusOK) // 200
 	json.NewEncoder(w).Encode(post)
 }
+
+func (ph *PostHandler) HandleUpdatePost(w http.ResponseWriter, r *http.Request) {
+	paramPostId := chi.URLParam(r, "id")
+	if paramPostId == "" {
+		http.NotFound(w,r)
+		return
+	}
+
+	postId, err := strconv.ParseInt(paramPostId, 10, 64)
+	if err != nil {
+		http.NotFound(w,r)
+		return
+	}
+
+	var post store.Post 
+	err = json.NewDecoder(r.Body).Decode(&post)
+
+	if err != nil {
+		http.Error(w, "Invalid Request data", http.StatusBadRequest)
+		return
+	}
+
+	post.ID = postId
+	updatedPost, err := ph.postStore.UpdatePost(&post)
+
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Can't update post right now", http.StatusInternalServerError)
+		return
+	}
+
+	if updatedPost == nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(http.StatusOK) // 200
+	json.NewEncoder(w).Encode(updatedPost)
+}
+
+func (ph *PostHandler) HandleDeletePost (w http.ResponseWriter, r *http.Request) {
+	paramPostId := chi.URLParam(r, "id")
+	if paramPostId == "" {
+		http.NotFound(w,r)
+		return
+	}
+
+	postId, err := strconv.ParseInt(paramPostId, 10, 64)
+	if err != nil {
+		http.NotFound(w,r)
+		return
+	}
+
+	err = ph.postStore.DeletePost(postId)
+
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Can't delete post right now", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
+}

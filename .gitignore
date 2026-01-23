@@ -19,6 +19,7 @@ go.work.sum
 /bin/
 /dist/
 /build/
+/tmp/
 
 ### Editor/IDE
 .idea/

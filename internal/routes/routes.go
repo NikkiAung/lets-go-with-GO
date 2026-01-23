@@ -19,5 +19,9 @@ func SetUpRoutes(app *app.Application) *chi.Mux {
 
 	r.Get("/posts", app.PostHandler.HandleGetPosts)
 
+	r.Put("/posts/{id}", app.PostHandler.HandleUpdatePost)
+
+	r.Delete("/posts/{id}", app.PostHandler.HandleDeletePost)
+
 	return r
 }

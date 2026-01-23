@@ -43,3 +43,11 @@ flowchart TD
     H --> H1[HandleGetPostByID]
     I --> I1[HandleCreatePost]
 ```
+
+┌──────────┬──────────────────┬──────────────────────────┐  
+ │ Function │ Direction │ Purpose │  
+ ├──────────┼──────────────────┼──────────────────────────┤  
+ │ Encode │ Go struct → JSON │ Send response to client │  
+ ├──────────┼──────────────────┼──────────────────────────┤  
+ │ Decode │ JSON → Go struct │ Read request from client │  
+ └──────────┴──────────────────┴──────────────────────────┘

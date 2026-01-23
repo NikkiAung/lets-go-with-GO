@@ -2,27 +2,29 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/NikkiAung/go-fundmentals/internal/store"
-	"github.com/go-chi/chi/v5"
+	"github.com/NikkiAung/go-fundmentals/internal/utils"
 )
 
 type PostHandler struct {
 	postStore store.PostStore
+	logger *log.Logger
 }
 
-func NewPostHandler (ps store.PostStore) *PostHandler {
+func NewPostHandler (ps store.PostStore,logger *log.Logger) *PostHandler {
 	return &PostHandler{
 		postStore: ps,
+		logger: logger,
 	}
 }
 
 func (ph *PostHandler)HandleCreatePost(w http.ResponseWriter, r *http.Request) {
 	var post store.Post
 
+	// JSON -> Go struct
 	err := json.NewDecoder(r.Body).Decode(&post)
 
 	if err != nil {
@@ -32,39 +34,31 @@ func (ph *PostHandler)HandleCreatePost(w http.ResponseWriter, r *http.Request) {
 
 	createdPost, err := ph.postStore.CreatePost(&post)
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Can't create post", http.StatusInternalServerError)
+		ph.logger.Printf("ERROR: request body error %v", err)
+		utils.WriteJSON(w,http.StatusInternalServerError, utils.Payload{"error" : "Can't create post"})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	// w.Header().Set("Content-Type", "application/json")
 
-	w.WriteHeader(http.StatusCreated) // 201
-	json.NewEncoder(w).Encode(createdPost)
+	// w.WriteHeader(http.StatusCreated) // 201
+	// json.NewEncoder(w).Encode(createdPost)
+	utils.WriteJSON(w, http.StatusCreated, utils.Payload{"createdPost" : createdPost})
 }
 
 func (ph *PostHandler)HandleGetPosts(w http.ResponseWriter, r *http.Request) {
 	posts, err := ph.postStore.GetPosts()
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Can't get posts right now", http.StatusInternalServerError)
+		ph.logger.Printf("ERROR: handle get post: %v", err)
+		utils.WriteJSON(w,http.StatusInternalServerError, utils.Payload{"error" : "Can't get posts"})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-
-	w.WriteHeader(http.StatusOK) // 200
-	json.NewEncoder(w).Encode(posts)
+	utils.WriteJSON(w, http.StatusOK, utils.Payload{"posts" : posts})
 }
 
 func (ph *PostHandler)HandleGetPostById(w http.ResponseWriter, r *http.Request) {
-	paramPostId := chi.URLParam(r, "id")
-	if paramPostId == "" {
-		http.NotFound(w,r)
-		return
-	}
-
-	postId, err := strconv.ParseInt(paramPostId, 10, 64)
+	postId, err := utils.ReadIDFromParams(r)
 	if err != nil {
 		http.NotFound(w,r)
 		return
@@ -72,8 +66,8 @@ func (ph *PostHandler)HandleGetPostById(w http.ResponseWriter, r *http.Request) 
 
 	post, err := ph.postStore.GetPostById(postId)
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Can't get post right now", http.StatusNotFound)
+		ph.logger.Printf("ERROR: handle get post: %v", err)
+		utils.WriteJSON(w,http.StatusNotFound, utils.Payload{"error" : "Can't get post"})
 		return
 	}
 
@@ -82,20 +76,11 @@ func (ph *PostHandler)HandleGetPostById(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-
-	w.WriteHeader(http.StatusOK) // 200
-	json.NewEncoder(w).Encode(post)
+	utils.WriteJSON(w, http.StatusOK, utils.Payload{"post" : post})
 }
 
 func (ph *PostHandler) HandleUpdatePost(w http.ResponseWriter, r *http.Request) {
-	paramPostId := chi.URLParam(r, "id")
-	if paramPostId == "" {
-		http.NotFound(w,r)
-		return
-	}
-
-	postId, err := strconv.ParseInt(paramPostId, 10, 64)
+	postId, err := utils.ReadIDFromParams(r)
 	if err != nil {
 		http.NotFound(w,r)
 		return
@@ -110,11 +95,12 @@ func (ph *PostHandler) HandleUpdatePost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	post.ID = postId
+	// Go struct 
 	updatedPost, err := ph.postStore.UpdatePost(&post)
 
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Can't update post right now", http.StatusInternalServerError)
+		ph.logger.Printf("ERROR: handle update post: %v", err)
+		utils.WriteJSON(w,http.StatusNotFound, utils.Payload{"error" : "Can't update post"})
 		return
 	}
 
@@ -123,20 +109,11 @@ func (ph *PostHandler) HandleUpdatePost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-
-	w.WriteHeader(http.StatusOK) // 200
-	json.NewEncoder(w).Encode(updatedPost)
+	utils.WriteJSON(w, http.StatusOK, utils.Payload{"post" : updatedPost})
 }
 
-func (ph *PostHandler) HandleDeletePost (w http.ResponseWriter, r *http.Request) {
-	paramPostId := chi.URLParam(r, "id")
-	if paramPostId == "" {
-		http.NotFound(w,r)
-		return
-	}
-
-	postId, err := strconv.ParseInt(paramPostId, 10, 64)
+func (ph *PostHandler) HandleDeletePost(w http.ResponseWriter, r *http.Request) {
+	postId, err := utils.ReadIDFromParams(r)
 	if err != nil {
 		http.NotFound(w,r)
 		return
@@ -145,8 +122,8 @@ func (ph *PostHandler) HandleDeletePost (w http.ResponseWriter, r *http.Request)
 	err = ph.postStore.DeletePost(postId)
 
 	if err != nil {
-		fmt.Println(err)
-		http.Error(w, "Can't delete post right now", http.StatusInternalServerError)
+		ph.logger.Printf("ERROR: handle delete post: %v", err)
+		utils.WriteJSON(w,http.StatusNotFound, utils.Payload{"error" : "Can't delete post"})
 		return
 	}
 

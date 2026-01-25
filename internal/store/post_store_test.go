@@ -51,7 +51,7 @@ func TestCreatePost(t *testing.T) {
 			name: "empty title should fail",
 			post: &Post{Title: "", Content: "World"},
 			wantErr: true,   // <- Expect error  
-		}
+		},
 	}
 	
 	for _, tt := range tests {

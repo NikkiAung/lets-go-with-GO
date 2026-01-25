@@ -33,4 +33,4 @@ go.work.sum
 Thumbs.db
 
 ### Local dev data
-database/postgres-data/
+database/

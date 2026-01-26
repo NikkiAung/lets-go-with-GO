@@ -50,6 +50,10 @@ func (h *UserHandler) validateRegsiterRequest(req *registerUserRequest) error {
 		return errors.New("Invalid email")
 	}
 
+	if req.Password == "" {
+		return errors.New("password is required") 
+	}
+
 	if len(req.Password) < 3 {
 		return errors.New("password must be greater than 3 characters")
 	}

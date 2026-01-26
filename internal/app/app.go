@@ -1,6 +1,7 @@
 package app
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,6 +15,8 @@ import (
 type Application struct {
 	Logger *log.Logger
 	PostHandler *api.PostHandler
+	UserHandler *api.UserHandler
+	DB *sql.DB
 }
 
 func NewApplication() (*Application, error) {
@@ -30,11 +33,16 @@ func NewApplication() (*Application, error) {
 	}
 
 	postStore := store.NewPostgresPostStore(postgresDB)
+	userStore := store.NewPostgresUserStore(postgresDB)
+
 	postHandler := api.NewPostHandler(postStore, logger)
+	userHandler := api.NewUserHandler(userStore, logger)
 
 	app := &Application{
 		Logger: logger,
 		PostHandler: postHandler,
+		UserHandler: userHandler,
+		DB : postgresDB,
 	}
 
 	return app, nil

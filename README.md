@@ -44,10 +44,18 @@ flowchart TD
     I --> I1[HandleCreatePost]
 ```
 
-┌──────────┬──────────────────┬──────────────────────────┐  
- │ Function │ Direction │ Purpose │  
- ├──────────┼──────────────────┼──────────────────────────┤  
- │ Encode │ Go struct → JSON │ Send response to client │  
- ├──────────┼──────────────────┼──────────────────────────┤  
- │ Decode │ JSON → Go struct │ Read request from client │  
- └──────────┴──────────────────┴──────────────────────────┘
+## JSON Encode/Decode
+
+```mermaid
+flowchart LR
+    subgraph Server
+        S[Go Struct]
+    end
+
+    subgraph Client
+        C[JSON]
+    end
+
+    S -->|Encode - Response| C
+    C -->|Decode - Request| S
+```

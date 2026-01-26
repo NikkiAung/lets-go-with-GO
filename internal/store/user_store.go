@@ -2,11 +2,37 @@ package store
 
 import (
 	"database/sql"
+	"errors"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type password struct {
 	plainText *string
 	hash []byte
+}
+
+func (p *password) Hash(plainText string) error {
+	hashpassword, err := bcrypt.GenerateFromPassword([]byte(plainText), 12)
+	if err != nil {
+		return err
+	}
+	p.plainText = &plainText
+	p.hash = hashpassword
+	
+	return nil
+}
+
+func (p *password) Match(plainText string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plainText))
+	if err != nil {
+		switch {
+		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) : 		return false, nil
+		default:
+			return false, err
+		}
+	}
+	return true, nil
 }
 
 type User struct {

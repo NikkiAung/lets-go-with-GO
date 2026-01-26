@@ -11,7 +11,7 @@ import (
 
 func Open() (*sql.DB, error) {
 	connectionString := "host=localhost user=user password=pass dbname=postgres port=5433 sslmode=disable"
-
+	// goose -dir migrations postgres "postgres://user:pass@localhost:5433/postgres?sslmode=disable" up
 	db, err := sql.Open("pgx", connectionString)
 	if err != nil {
 		return nil, fmt.Errorf("db: open error %w", err)
